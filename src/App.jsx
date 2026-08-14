@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./components/Dashboard";
 import RequestForm from "./components/RequestForm";
 import RequestDetail from "./components/RequestDetail";
+import RequestHistory from "./components/RequestHistory";
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -24,6 +25,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RequestHistory />
             </Layout>
           </ProtectedRoute>
         }

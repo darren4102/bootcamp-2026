@@ -4,8 +4,8 @@ import { saveSession, readSession, clearSession } from "../utils/storage";
 // Hardcoded, client-side-only credentials. This is a POC — never do this in production.
 const USERS = [
   { username: "requester", password: "password", role: "Requester", displayName: "Luke Simurina" },
-  { username: "approver", password: "password", role: "Approver", displayName: "Darren Nguyen" },
-  { username: "manager", password: "password", role: "Manager", displayName: "Morgan Reyes" },
+  { username: "approver", password: "password", role: "Approver", displayName: "Dylan Nguyen" },
+  { username: "manager", password: "password", role: "Manager", displayName: "Katie Kim" },
 ];
 
 const AuthContext = createContext(null);

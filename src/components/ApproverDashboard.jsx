@@ -3,22 +3,29 @@ import RequesterDashboard from "./RequesterDashboard";
 import RequestCard from "./RequestCard";
 import SummaryStat from "./SummaryStat";
 import TrackTimeline from "./TrackTimeline";
-import { STATUS, isActive, isUpcoming, isCompleted } from "../utils/storage";
+import { STATUS, STAGE, isActive, isUpcoming, isCompleted } from "../utils/storage";
 
-export default function ApproverDashboard({ requests, username }) {
+const UPCOMING_WINDOW_DAYS = 30;
+const STAGE_BY_ROLE = { Approver: STAGE.APPROVER, Manager: STAGE.MANAGER };
+
+export default function ApproverDashboard({ requests, username, role }) {
+  const myStage = STAGE_BY_ROLE[role];
+
   const pending = useMemo(
     () =>
       requests
-        .filter((r) => r.status === STATUS.PENDING)
+        .filter((r) => r.status === STATUS.PENDING && r.stage === myStage)
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
-    [requests]
+    [requests, myStage]
   );
 
   const active = useMemo(() => requests.filter(isActive), [requests]);
-  const upcoming = useMemo(
-    () => requests.filter(isUpcoming).sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)),
-    [requests]
-  );
+  const upcoming = useMemo(() => {
+    const windowEnd = Date.now() + UPCOMING_WINDOW_DAYS * 24 * 3600 * 1000;
+    return requests
+      .filter((r) => isUpcoming(r) && new Date(r.startDateTime).getTime() <= windowEnd)
+      .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+  }, [requests]);
   const completed = useMemo(() => requests.filter(isCompleted), [requests]);
 
   return (
@@ -59,12 +66,15 @@ export default function ApproverDashboard({ requests, username }) {
 
       <section>
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="font-display text-lg font-semibold text-ink-900">Upcoming obstructions</h2>
+          <div>
+            <h2 className="font-display text-lg font-semibold text-ink-900">Upcoming obstructions</h2>
+            <p className="mt-0.5 text-xs text-ink-500">Approved obstructions starting within the next {UPCOMING_WINDOW_DAYS} days.</p>
+          </div>
           <span className="font-mono text-xs text-ink-500">{upcoming.length} approved &amp; scheduled</span>
         </div>
         {upcoming.length === 0 ? (
           <div className="rounded-xl border border-dashed border-paper-300 bg-paper-50 px-6 py-8 text-center">
-            <p className="text-sm text-ink-500">Nothing approved and scheduled ahead yet.</p>
+            <p className="text-sm text-ink-500">Nothing approved and scheduled in the next {UPCOMING_WINDOW_DAYS} days.</p>
           </div>
         ) : (
           <div className="space-y-2.5">

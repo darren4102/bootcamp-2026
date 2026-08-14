@@ -36,6 +36,18 @@ export default function Layout({ children }) {
             >
               Dashboard
             </Link>
+            {(user?.role === "Approver" || user?.role === "Manager") && (
+              <Link
+                to="/history"
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  location.pathname === "/history"
+                    ? "bg-ink-900 text-paper-50"
+                    : "text-ink-700 hover:bg-paper-200"
+                }`}
+              >
+                History
+              </Link>
+            )}
             <Link
               to="/requests/new"
               className="ml-1 rounded-md border border-ink-900/15 px-3 py-1.5 text-sm font-medium text-ink-800 transition-colors hover:bg-paper-200"
