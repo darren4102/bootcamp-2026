@@ -43,9 +43,7 @@ export default function Login() {
 
       <div className="relative w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-ink-900 text-signal-amber font-display font-bold text-lg">
-            TH
-          </div>
+          <img src="/xyz-icon.svg" className="h-11 w-11" />
           <div>
             <p className="font-display text-xl font-semibold tracking-tight text-ink-900">TrackHold</p>
             <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
