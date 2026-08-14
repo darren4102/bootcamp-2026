@@ -33,14 +33,6 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-paper-100 text-ink-900 flex items-center justify-center px-6">
-      {/* rail-line backdrop */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.4]">
-        <div className="absolute left-0 right-0 top-1/3 h-px bg-paper-300" />
-        <div className="absolute left-0 right-0 top-1/3 mt-3 h-px bg-paper-300" />
-        <div className="absolute left-0 right-0 bottom-1/4 h-px bg-paper-300" />
-        <div className="absolute left-0 right-0 bottom-1/4 mt-3 h-px bg-paper-300" />
-      </div>
-
       <div className="relative w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
           <img src="/xyz-icon.svg" className="h-11 w-11" />
@@ -55,7 +47,7 @@ export default function Login() {
         <div className="rounded-xl border border-paper-300 bg-paper-50 p-7 shadow-xl shadow-ink-900/5">
           <h1 className="font-display text-lg font-semibold text-ink-900">Sign in</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Access the possession &amp; obstruction request system.
+            Access the obstruction request system.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
