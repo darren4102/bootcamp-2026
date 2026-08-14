@@ -260,18 +260,11 @@ export default function RequestDetail() {
       {/* Approver / manager actions */}
       {canReview && (
         <div className="mt-5 rounded-xl border border-paper-300 bg-paper-50 p-5">
-          <h2 className="font-display text-sm font-semibold text-ink-900">
-            {atManagerStage ? "Final manager approval" : "Review this request"}
+          <h2 className="font-display text-base font-semibold text-ink-900">
+            {atManagerStage ? "Review this request" : "Review this request"}
           </h2>
-          <p className="mt-1 text-sm text-ink-500">
-            {atManagerStage
-              ? "The approver has cleared this request. Your decision here is the final word."
-              : onBehalf
-              ? "No approver action yet. As manager you can complete this step on their behalf — the request will still need your separate final approval afterward."
-              : "Review the details above, then approve, reject, or revise."}
-          </p>
-          <label className="mt-3 block text-sm font-medium text-ink-800">
-            Comment <span className="font-normal text-ink-500">(required for rejection or requested changes)</span>
+          <label className="mt-4 block text-sm font-medium text-ink-800">
+            Comment <span className="font-normal text-ink-500">(required for rejection or revision)</span>
           </label>
           <textarea
             value={comment}
