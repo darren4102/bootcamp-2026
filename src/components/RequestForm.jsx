@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import TimePicker from "./TimePicker";
 import {
   STATUS,
   STAGE,
@@ -29,6 +30,13 @@ function toLocalInputValue(iso) {
   const d = new Date(iso);
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Splits the combined "YYYY-MM-DDTHH:mm" local value used by the form into
+// the parts the date input and TimePicker each edit independently.
+function splitLocalValue(value) {
+  const [date = "", time = ""] = (value || "").split("T");
+  return { date, time };
 }
 
 export default function RequestForm() {
@@ -67,6 +75,20 @@ export default function RequestForm() {
 
   function setField(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  // Date and time are edited by separate controls but stored as the same
+  // combined local "YYYY-MM-DDTHH:mm" string setField/toLocalInputValue
+  // already use, so validation/payload building need no changes. Time
+  // defaults to 00:00 the first time a date is picked before any time is.
+  function setDateTimePart(field, part, value) {
+    setForm((f) => {
+      const { date, time } = splitLocalValue(f[field]);
+      const nextDate = part === "date" ? value : date;
+      const nextTime = part === "time" ? value : time || "00:00";
+      return { ...f, [field]: nextDate ? `${nextDate}T${nextTime}` : "" };
+    });
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
   }
 
@@ -153,6 +175,9 @@ export default function RequestForm() {
   const lockedNotice =
     isEdit && existingStatus && ![STATUS.DRAFT, STATUS.CHANGES_REQUIRED].includes(existingStatus);
 
+  const { date: startDate, time: startTime } = splitLocalValue(form.startDateTime);
+  const { date: endDate, time: endTime } = splitLocalValue(form.endDateTime);
+
   return (
     <div className="mx-auto max-w-2xl">
       <button
@@ -222,20 +247,38 @@ export default function RequestForm() {
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Start date &amp; time" required error={errors.startDateTime}>
-            <input
-              type="datetime-local"
-              value={form.startDateTime}
-              onChange={(e) => setField("startDateTime", e.target.value)}
-              className={inputClass(errors.startDateTime)}
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setDateTimePart("startDateTime", "date", e.target.value)}
+                className={`${inputClass(errors.startDateTime)} flex-1`}
+              />
+              <div className="w-32">
+                <TimePicker
+                  value={startTime}
+                  onChange={(t) => setDateTimePart("startDateTime", "time", t)}
+                  error={errors.startDateTime}
+                />
+              </div>
+            </div>
           </Field>
           <Field label="End date &amp; time" required error={errors.endDateTime}>
-            <input
-              type="datetime-local"
-              value={form.endDateTime}
-              onChange={(e) => setField("endDateTime", e.target.value)}
-              className={inputClass(errors.endDateTime)}
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setDateTimePart("endDateTime", "date", e.target.value)}
+                className={`${inputClass(errors.endDateTime)} flex-1`}
+              />
+              <div className="w-32">
+                <TimePicker
+                  value={endTime}
+                  onChange={(t) => setDateTimePart("endDateTime", "time", t)}
+                  error={errors.endDateTime}
+                />
+              </div>
+            </div>
           </Field>
         </div>
 
