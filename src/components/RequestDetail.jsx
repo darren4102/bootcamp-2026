@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import StatusBadge from "./StatusBadge";
-import { STATUS, getRequestById, updateRequestFields } from "../utils/storage";
+import ApprovalStepper from "./ApprovalStepper";
+import { STATUS, STAGE, getRequestById, updateRequestFields } from "../utils/storage";
 
 function formatDateTime(iso) {
   return new Date(iso).toLocaleString(undefined, {
@@ -26,7 +27,11 @@ export default function RequestDetail() {
 
   const isOwner = request?.requesterUsername === user.username;
   const isApprover = user.role === "Approver";
-  const canReview = isApprover && request?.status === STATUS.PENDING;
+  const isManager = user.role === "Manager";
+  const atApproverStage = request?.status === STATUS.PENDING && request?.stage === STAGE.APPROVER;
+  const atManagerStage = request?.status === STATUS.PENDING && request?.stage === STAGE.MANAGER;
+  const canReview = (atApproverStage && (isApprover || isManager)) || (atManagerStage && isManager);
+  const onBehalf = atApproverStage && isManager;
   const canEdit = isOwner && [STATUS.DRAFT, STATUS.CHANGES_REQUIRED].includes(request?.status);
 
   const durationHrs = useMemo(() => {
@@ -50,11 +55,21 @@ export default function RequestDetail() {
   }
 
   function handleApprove() {
-    updateRequestFields(id, {
-      status: STATUS.APPROVED,
-      approverComment: comment.trim() || null,
-      approverUsername: user.username,
-    });
+    if (atApproverStage) {
+      updateRequestFields(id, {
+        approverComment: comment.trim() || null,
+        approverUsername: user.username,
+        approverActedByRole: user.role,
+        stage: STAGE.MANAGER,
+      });
+    } else if (atManagerStage) {
+      updateRequestFields(id, {
+        status: STATUS.APPROVED,
+        managerComment: comment.trim() || null,
+        managerUsername: user.username,
+        stage: null,
+      });
+    }
     refresh();
     setComment("");
     setConfirming(null);
@@ -65,11 +80,22 @@ export default function RequestDetail() {
       setActionError("Please add a comment explaining the rejection.");
       return;
     }
-    updateRequestFields(id, {
-      status: STATUS.REJECTED,
-      approverComment: comment.trim(),
-      approverUsername: user.username,
-    });
+    if (atApproverStage) {
+      updateRequestFields(id, {
+        status: STATUS.REJECTED,
+        approverComment: comment.trim(),
+        approverUsername: user.username,
+        approverActedByRole: user.role,
+        stage: null,
+      });
+    } else if (atManagerStage) {
+      updateRequestFields(id, {
+        status: STATUS.REJECTED,
+        managerComment: comment.trim(),
+        managerUsername: user.username,
+        stage: null,
+      });
+    }
     refresh();
     setComment("");
     setConfirming(null);
@@ -81,11 +107,22 @@ export default function RequestDetail() {
       setActionError("Please add a comment describing the changes needed.");
       return;
     }
-    updateRequestFields(id, {
-      status: STATUS.CHANGES_REQUIRED,
-      approverComment: comment.trim(),
-      approverUsername: user.username,
-    });
+    if (atApproverStage) {
+      updateRequestFields(id, {
+        status: STATUS.CHANGES_REQUIRED,
+        approverComment: comment.trim(),
+        approverUsername: user.username,
+        approverActedByRole: user.role,
+        stage: null,
+      });
+    } else if (atManagerStage) {
+      updateRequestFields(id, {
+        status: STATUS.CHANGES_REQUIRED,
+        managerComment: comment.trim(),
+        managerUsername: user.username,
+        stage: null,
+      });
+    }
     refresh();
     setComment("");
     setConfirming(null);
@@ -93,7 +130,15 @@ export default function RequestDetail() {
   }
 
   function handleSubmitDraft() {
-    updateRequestFields(id, { status: STATUS.PENDING });
+    updateRequestFields(id, {
+      status: STATUS.PENDING,
+      stage: STAGE.APPROVER,
+      approverComment: null,
+      approverUsername: null,
+      approverActedByRole: null,
+      managerComment: null,
+      managerUsername: null,
+    });
     refresh();
   }
 
@@ -117,6 +162,8 @@ export default function RequestDetail() {
           </div>
           <StatusBadge status={request.status} />
         </div>
+
+        <ApprovalStepper request={request} />
 
         <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
           <DetailItem label="Obstruction type" value={request.obstructionType} />
@@ -145,18 +192,36 @@ export default function RequestDetail() {
         </div>
 
         {request.approverComment && (
-          <div
-            className={`mt-5 rounded-md border px-4 py-3 text-sm ${
+          <DecisionNote
+            role="Approver"
+            username={request.approverUsername}
+            comment={request.approverComment}
+            // the approver step only produced a terminal outcome (rejected/changes) if
+            // the manager never got involved this cycle — otherwise this was a pass-through approval
+            outcome={
+              request.status === STATUS.REJECTED && !request.managerUsername
+                ? "rejected"
+                : request.status === STATUS.CHANGES_REQUIRED && !request.managerUsername
+                ? "changes"
+                : "approved"
+            }
+            onBehalf={request.approverActedByRole === "Manager"}
+          />
+        )}
+
+        {request.managerComment && (
+          <DecisionNote
+            role="Manager"
+            username={request.managerUsername}
+            comment={request.managerComment}
+            outcome={
               request.status === STATUS.REJECTED
-                ? "border-alert-rust/25 bg-alert-rust/5 text-alert-rust-dark"
-                : "border-slate-blue/25 bg-slate-blue/5 text-slate-blue"
-            }`}
-          >
-            <p className="mb-1 font-mono text-[10px] uppercase tracking-widest opacity-70">
-              {request.status === STATUS.REJECTED ? "Rejection reason" : "Approver note"} — {request.approverUsername}
-            </p>
-            <p className="leading-relaxed">{request.approverComment}</p>
-          </div>
+                ? "rejected"
+                : request.status === STATUS.CHANGES_REQUIRED
+                ? "changes"
+                : "approved"
+            }
+          />
         )}
       </div>
 
@@ -170,7 +235,7 @@ export default function RequestDetail() {
             <p className="mt-0.5 text-sm text-ink-500">
               {request.status === STATUS.DRAFT
                 ? "Edit it any time, or submit it now for approval."
-                : "Update the request based on the approver's note above, then resubmit."}
+                : "Update the request based on the reviewer's note above, then resubmit."}
             </p>
           </div>
           <div className="flex gap-2">
@@ -192,10 +257,19 @@ export default function RequestDetail() {
         </div>
       )}
 
-      {/* Approver actions */}
+      {/* Approver / manager actions */}
       {canReview && (
         <div className="mt-5 rounded-xl border border-paper-300 bg-paper-50 p-5">
-          <h2 className="font-display text-sm font-semibold text-ink-900">Review this request</h2>
+          <h2 className="font-display text-sm font-semibold text-ink-900">
+            {atManagerStage ? "Final manager approval" : "Review this request"}
+          </h2>
+          <p className="mt-1 text-sm text-ink-500">
+            {atManagerStage
+              ? "The approver has cleared this request. Your decision here is the final word."
+              : onBehalf
+              ? "No approver action yet. As manager you can complete this step on their behalf — the request will still need your separate final approval afterward."
+              : "Review the details above, then approve, reject, or request changes."}
+          </p>
           <label className="mt-3 block text-sm font-medium text-ink-800">
             Comment <span className="font-normal text-ink-500">(required for rejection or requested changes)</span>
           </label>
@@ -238,11 +312,38 @@ export default function RequestDetail() {
               onClick={handleApprove}
               className="rounded-md bg-rail-green px-4 py-2 text-sm font-semibold text-paper-50 hover:bg-rail-green-dark"
             >
-              Approve
+              {atManagerStage ? "Give final approval" : onBehalf ? "Approve on behalf of approver" : "Approve"}
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DecisionNote({ role, username, comment, outcome, onBehalf = false }) {
+  const palette =
+    outcome === "rejected"
+      ? "border-alert-rust/25 bg-alert-rust/5 text-alert-rust-dark"
+      : outcome === "changes"
+      ? "border-slate-blue/25 bg-slate-blue/5 text-slate-blue"
+      : "border-rail-green/25 bg-rail-green/5 text-rail-green-dark";
+
+  const outcomeLabel = outcome === "rejected" ? "Rejection reason" : outcome === "changes" ? "Changes requested" : `${role} note`;
+
+  return (
+    <div className={`mt-5 rounded-md border px-4 py-3 text-sm ${palette}`}>
+      <p className="mb-1 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest opacity-70">
+        <span>
+          {outcomeLabel} — {username}
+        </span>
+        {onBehalf && (
+          <span className="rounded-full bg-ink-900/10 px-1.5 py-0.5 text-ink-800 normal-case tracking-normal">
+            on behalf of the approver
+          </span>
+        )}
+      </p>
+      <p className="leading-relaxed">{comment}</p>
     </div>
   );
 }

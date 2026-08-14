@@ -5,6 +5,7 @@ import { saveSession, readSession, clearSession } from "../utils/storage";
 const USERS = [
   { username: "requester", password: "password", role: "Requester", displayName: "Luke Simurina" },
   { username: "approver", password: "password", role: "Approver", displayName: "Darren Nguyen" },
+  { username: "manager", password: "password", role: "Manager", displayName: "Morgan Reyes" },
 ];
 
 const AuthContext = createContext(null);

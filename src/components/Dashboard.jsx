@@ -7,7 +7,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { requests } = useRequests();
 
-  if (user.role === "Approver") {
+  if (user.role === "Approver" || user.role === "Manager") {
     return <ApproverDashboard requests={requests} username={user.username} />;
   }
 

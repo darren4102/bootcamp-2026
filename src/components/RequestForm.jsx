@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   STATUS,
+  STAGE,
   PRIORITIES,
   OBSTRUCTION_TYPES,
   createRequest,
@@ -88,7 +89,7 @@ export default function RequestForm() {
   }
 
   function buildPayload(status) {
-    return {
+    const base = {
       location: form.location.trim(),
       obstructionType: form.obstructionType,
       startDateTime: new Date(form.startDateTime).toISOString(),
@@ -99,6 +100,20 @@ export default function RequestForm() {
       attachmentName: form.attachmentName || null,
       status,
     };
+    if (status === STATUS.PENDING) {
+      // (Re)submitting always re-enters the approval chain at the start —
+      // the approver reviews first even if a manager acted on the prior cycle.
+      return {
+        ...base,
+        stage: STAGE.APPROVER,
+        approverComment: null,
+        approverUsername: null,
+        approverActedByRole: null,
+        managerComment: null,
+        managerUsername: null,
+      };
+    }
+    return base;
   }
 
   function handleSave(targetStatus) {

@@ -61,7 +61,7 @@ export default function Login() {
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="requester or approver"
+                placeholder="requester, approver, or manager"
                 className="w-full rounded-md border border-paper-300 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/40 outline-none focus:border-signal-amber transition-colors"
               />
             </div>
@@ -131,6 +131,14 @@ export default function Login() {
               >
                 <span className="block font-mono text-ink-900">approver</span>
                 <span className="text-ink-500">Approver role</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemo("manager")}
+                className="flex-1 rounded border border-paper-300 bg-white px-2 py-1.5 text-left text-xs text-ink-700 hover:border-signal-amber/60 hover:text-ink-900"
+              >
+                <span className="block font-mono text-ink-900">manager</span>
+                <span className="text-ink-500">Manager role</span>
               </button>
             </div>
           </div>

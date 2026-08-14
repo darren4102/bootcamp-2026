@@ -20,6 +20,14 @@ export const STATUS_ORDER = [
   STATUS.REJECTED,
 ];
 
+// Two-tier approval chain: an approver reviews first, then a manager gives the
+// final sign-off. Both stages share STATUS.PENDING ("Pending Approval") — this
+// field is what actually tracks whose turn it is.
+export const STAGE = {
+  APPROVER: "Approver",
+  MANAGER: "Manager",
+};
+
 export const PRIORITIES = ["Low", "Medium", "High", "Critical"];
 
 export const OBSTRUCTION_TYPES = [
@@ -83,10 +91,14 @@ export function createRequest(data, requesterUsername) {
     priority: data.priority,
     attachmentName: data.attachmentName || null,
     status: data.status,
+    stage: data.status === STATUS.PENDING ? STAGE.APPROVER : null,
     createdAt: now,
     updatedAt: now,
     approverComment: null,
     approverUsername: null,
+    approverActedByRole: null,
+    managerComment: null,
+    managerUsername: null,
   };
   const updated = [newRequest, ...existing];
   writeAll(updated);
@@ -164,10 +176,14 @@ export function seedIfEmpty() {
       priority: "Medium",
       attachmentName: "inspection_report_q3.pdf",
       status: STATUS.APPROVED,
+      stage: null,
       createdAt: hrs(-200),
       updatedAt: hrs(-190),
       approverComment: "Approved — standard maintenance window, low traffic impact.",
       approverUsername: "approver",
+      approverActedByRole: "Approver",
+      managerComment: "Final sign-off — no conflicts with the possession calendar.",
+      managerUsername: "manager",
     },
     {
       id: "OBS-2026-0002",
@@ -181,10 +197,14 @@ export function seedIfEmpty() {
       priority: "High",
       attachmentName: "signal_upgrade_plan.pdf",
       status: STATUS.APPROVED,
+      stage: null,
       createdAt: hrs(-150),
       updatedAt: hrs(-140),
-      approverComment: "Approved. Coordinate with control room 30 min before start.",
-      approverUsername: "approver",
+      approverComment: "Approved on the approver's behalf — urgent signal cutover window. Coordinate with control room 30 min before start.",
+      approverUsername: "manager",
+      approverActedByRole: "Manager",
+      managerComment: "Final sign-off given.",
+      managerUsername: "manager",
     },
     {
       id: "OBS-2026-0003",
@@ -198,10 +218,14 @@ export function seedIfEmpty() {
       priority: "Low",
       attachmentName: null,
       status: STATUS.APPROVED,
+      stage: null,
       createdAt: hrs(-48),
       updatedAt: hrs(-40),
       approverComment: "Approved, low impact.",
       approverUsername: "approver",
+      approverActedByRole: "Approver",
+      managerComment: "Agreed, low impact — signed off.",
+      managerUsername: "manager",
     },
     {
       id: "OBS-2026-0004",
@@ -215,10 +239,14 @@ export function seedIfEmpty() {
       priority: "Critical",
       attachmentName: "fault_log_14b.csv",
       status: STATUS.PENDING,
+      stage: STAGE.APPROVER,
       createdAt: hrs(-2),
       updatedAt: hrs(-2),
       approverComment: null,
       approverUsername: null,
+      approverActedByRole: null,
+      managerComment: null,
+      managerUsername: null,
     },
     {
       id: "OBS-2026-0005",
@@ -232,10 +260,14 @@ export function seedIfEmpty() {
       priority: "Medium",
       attachmentName: null,
       status: STATUS.PENDING,
+      stage: STAGE.MANAGER,
       createdAt: hrs(-10),
-      updatedAt: hrs(-10),
-      approverComment: null,
-      approverUsername: null,
+      updatedAt: hrs(-9),
+      approverComment: "Looks routine — cleared for the manager's final sign-off.",
+      approverUsername: "approver",
+      approverActedByRole: "Approver",
+      managerComment: null,
+      managerUsername: null,
     },
     {
       id: "OBS-2026-0006",
@@ -249,10 +281,14 @@ export function seedIfEmpty() {
       priority: "Low",
       attachmentName: "utility_permit.pdf",
       status: STATUS.CHANGES_REQUIRED,
+      stage: null,
       createdAt: hrs(-30),
       updatedAt: hrs(-20),
       approverComment: "Please confirm the utility company's insurance certificate is current and attach it before resubmitting.",
       approverUsername: "approver",
+      approverActedByRole: "Approver",
+      managerComment: null,
+      managerUsername: null,
     },
     {
       id: "OBS-2026-0007",
@@ -266,10 +302,14 @@ export function seedIfEmpty() {
       priority: "High",
       attachmentName: null,
       status: STATUS.REJECTED,
+      stage: null,
       createdAt: hrs(-510),
       updatedAt: hrs(-495),
-      approverComment: "Duplicate of OBS-2026-0006's crew allocation — resubmit for the following week once crew is free.",
+      approverComment: "Looked reasonable to me — passing up for final sign-off.",
       approverUsername: "approver",
+      approverActedByRole: "Approver",
+      managerComment: "Rejected — duplicate of OBS-2026-0006's crew allocation. Resubmit for the following week once crew is free.",
+      managerUsername: "manager",
     },
     {
       id: "OBS-2026-0008",
@@ -283,9 +323,13 @@ export function seedIfEmpty() {
       priority: "Low",
       attachmentName: null,
       status: STATUS.DRAFT,
+      stage: null,
       createdAt: hrs(-1),
       updatedAt: hrs(-1),
       approverComment: null,
+      approverActedByRole: null,
+      managerComment: null,
+      managerUsername: null,
       approverUsername: null,
     },
   ];
