@@ -16,9 +16,7 @@ export default function Layout({ children }) {
       <header className="sticky top-0 z-30 border-b border-paper-300 bg-paper-50/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
           <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-ink-900 text-signal-amber font-display font-bold text-sm">
-              TH
-            </div>
+            <img src="/xyz-icon.svg" className="h-11 w-11" />
             <div className="leading-tight">
               <p className="font-display text-sm font-semibold text-ink-900">XYZ Corporations</p>
               <p className="hidden font-mono text-[10px] uppercase tracking-widest text-ink-500 sm:block">

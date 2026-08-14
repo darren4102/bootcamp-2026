@@ -33,19 +33,9 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-ink-950 text-paper-100 flex items-center justify-center px-6">
-      {/* rail-line backdrop */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.15]">
-        <div className="absolute left-0 right-0 top-1/3 h-px bg-paper-100" />
-        <div className="absolute left-0 right-0 top-1/3 mt-3 h-px bg-paper-100" />
-        <div className="absolute left-0 right-0 bottom-1/4 h-px bg-paper-100" />
-        <div className="absolute left-0 right-0 bottom-1/4 mt-3 h-px bg-paper-100" />
-      </div>
-
       <div className="relative w-full max-w-sm">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-signal-amber text-ink-950 font-display font-bold text-lg">
-            TH
-          </div>
+          <img src="/xyz-icon.svg" className="h-11 w-11" />
           <div>
             <p className="font-display text-xl font-semibold tracking-tight text-paper-50">XYZ Corporations</p>
             <p className="font-mono text-[11px] uppercase tracking-widest text-paper-300/60">
