@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
+import { getUserDisplayName } from "../context/AuthContext";
 
 const PRIORITY_STYLES = {
   Critical: "text-alert-rust-dark",
@@ -37,7 +38,7 @@ export default function RequestCard({ request, showRequester = false }) {
           {showRequester && (
             <>
               <span className="text-paper-300">•</span>
-              <span>by {request.requesterUsername}</span>
+              <span>by {getUserDisplayName(request.requesterUsername)}</span>
             </>
           )}
         </div>

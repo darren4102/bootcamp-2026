@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, getUserDisplayName, getUserByRole } from "../context/AuthContext";
 import StatusBadge from "./StatusBadge";
 import ApprovalStepper from "./ApprovalStepper";
 import { STATUS, STAGE, getRequestById, updateRequestFields } from "../utils/storage";
@@ -171,7 +171,7 @@ export default function RequestDetail() {
           <DetailItem label="Start" value={formatDateTime(request.startDateTime)} />
           <DetailItem label="End" value={formatDateTime(request.endDateTime)} />
           <DetailItem label="Duration" value={`${durationHrs} hour${durationHrs === 1 ? "" : "s"}`} />
-          <DetailItem label="Requested by" value={request.requesterUsername} />
+          <DetailItem label="Requested by" value={getUserDisplayName(request.requesterUsername)} />
           <DetailItem label="Reason" value={request.reason} />
           <DetailItem
             label="Attachment"
@@ -194,7 +194,7 @@ export default function RequestDetail() {
         {request.approverComment && (
           <DecisionNote
             role="Approver"
-            username={request.approverUsername}
+            username={getUserDisplayName(request.approverUsername)}
             comment={request.approverComment}
             // the approver step only produced a terminal outcome (rejected/changes) if
             // the manager never got involved this cycle — otherwise this was a pass-through approval
@@ -206,13 +206,14 @@ export default function RequestDetail() {
                 : "approved"
             }
             onBehalf={request.approverActedByRole === "Manager"}
+            onBehalfOfName={getUserByRole("Approver")?.displayName || "the approver"}
           />
         )}
 
         {request.managerComment && (
           <DecisionNote
             role="Manager"
-            username={request.managerUsername}
+            username={getUserDisplayName(request.managerUsername)}
             comment={request.managerComment}
             outcome={
               request.status === STATUS.REJECTED
@@ -314,7 +315,7 @@ export default function RequestDetail() {
   );
 }
 
-function DecisionNote({ role, username, comment, outcome, onBehalf = false }) {
+function DecisionNote({ role, username, comment, outcome, onBehalf = false, onBehalfOfName }) {
   const palette =
     outcome === "rejected"
       ? "border-alert-rust/25 bg-alert-rust/5 text-alert-rust-dark"
@@ -332,7 +333,7 @@ function DecisionNote({ role, username, comment, outcome, onBehalf = false }) {
         </span>
         {onBehalf && (
           <span className="rounded-full bg-ink-900/10 px-1.5 py-0.5 text-ink-800 normal-case tracking-normal">
-            on behalf of the approver
+            on behalf of {onBehalfOfName}
           </span>
         )}
       </p>

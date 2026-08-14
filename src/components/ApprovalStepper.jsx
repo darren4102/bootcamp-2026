@@ -1,4 +1,5 @@
 import { STATUS, STAGE } from "../utils/storage";
+import { getUserDisplayName } from "../context/AuthContext";
 
 // Visual state per step, independent of which of the three steps it's applied to.
 const STEP_STYLES = {
@@ -29,10 +30,12 @@ const STEP_STYLES = {
   },
 };
 
+const ON_BEHALF_VERB = { complete: "Approved", rejected: "Rejected", changes: "Changes requested" };
+
 // Derive the visual state of each of the three chain steps purely from the
 // request's status/stage — no extra fields needed beyond what storage.js tracks.
 function computeSteps(request) {
-  const { status, stage, approverActedByRole, managerUsername } = request;
+  const { status, stage, approverActedByRole, approverUsername, managerUsername } = request;
 
   const requesterState = status === STATUS.DRAFT ? "current" : "complete";
   let approverState = "upcoming";
@@ -60,9 +63,15 @@ function computeSteps(request) {
   const approverOnBehalf =
     approverActedByRole === "Manager" && !["upcoming", "current"].includes(approverState);
 
+  // The actor is whoever was logged in when the approver-stage action was
+  // taken (stored in approverUsername).
+  const onBehalfLabel = approverOnBehalf
+    ? `${ON_BEHALF_VERB[approverState]} on behalf by ${getUserDisplayName(approverUsername)}`
+    : null;
+
   return [
     { key: "requester", label: "Requester", state: requesterState },
-    { key: "approver", label: "Approver", state: approverState, onBehalf: approverOnBehalf },
+    { key: "approver", label: "Approver", state: approverState, onBehalf: approverOnBehalf, onBehalfLabel },
     { key: "manager", label: "Manager", state: managerState },
   ];
 }
@@ -101,29 +110,46 @@ export default function ApprovalStepper({ request }) {
   return (
     <div className="mt-6 rounded-lg border border-paper-300 bg-paper-100/60 px-5 py-5">
       <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-500">Approval chain</p>
-      <div className="flex items-start">
+      {/* Circles + connecting lines: sized purely by the fixed 2rem circle,
+          so variable-length caption text below never stretches/shortens a
+          line or breaks vertical alignment between steps. */}
+      <div className="flex items-center">
         {steps.map((step, idx) => {
           const styles = STEP_STYLES[step.state];
           return (
             <div key={step.key} className={`flex items-center ${idx < steps.length - 1 ? "flex-1" : ""}`}>
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors ${styles.circle}`}
-                >
-                  <StepIcon state={step.state} />
-                </div>
+              <div
+                className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${styles.circle}`}
+              >
+                <StepIcon state={step.state} />
+              </div>
+              {idx < steps.length - 1 && (
+                <div className={`mx-2 h-0.5 flex-1 rounded-full transition-colors ${styles.line}`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Labels + on-behalf captions: mirrors the row above's exact flex
+          geometry (same fixed-width box, same flex-1 spacer) so each label
+          centers under its circle regardless of caption length. */}
+      <div className="flex items-start">
+        {steps.map((step, idx) => {
+          const styles = STEP_STYLES[step.state];
+          return (
+            <div key={step.key} className={`flex items-start ${idx < steps.length - 1 ? "flex-1" : ""}`}>
+              <div className="flex w-8 flex-shrink-0 flex-col items-center">
                 <span className={`mt-2 font-mono text-[11px] font-medium uppercase tracking-wide ${styles.label}`}>
                   {step.label}
                 </span>
                 {step.onBehalf && (
-                  <span className="mt-0.5 max-w-[7rem] text-center text-[10px] leading-tight text-ink-600">
-                    on behalf of approver
+                  <span className="mt-0.5 w-32 text-center text-[10px] leading-tight text-ink-600">
+                    {step.onBehalfLabel}
                   </span>
                 )}
               </div>
-              {idx < steps.length - 1 && (
-                <div className={`mx-2 mt-4 h-0.5 flex-1 rounded-full transition-colors ${styles.line}`} />
-              )}
+              {idx < steps.length - 1 && <div className="mx-2 flex-1" />}
             </div>
           );
         })}

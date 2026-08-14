@@ -8,6 +8,19 @@ const USERS = [
   { username: "manager", password: "password", role: "Manager", displayName: "Katie Kim" },
 ];
 
+// Attribution lookups shared by any component that needs a person's name
+// instead of their username/role — request cards, the detail view, and the
+// approval flow chart all resolve names through these.
+export function getUserDisplayName(username) {
+  if (!username) return null;
+  const match = USERS.find((u) => u.username === username);
+  return match?.displayName || username;
+}
+
+export function getUserByRole(role) {
+  return USERS.find((u) => u.role === role) || null;
+}
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
