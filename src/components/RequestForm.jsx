@@ -173,7 +173,7 @@ export default function RequestForm() {
   }
 
   const lockedNotice =
-    isEdit && existingStatus && ![STATUS.DRAFT, STATUS.CHANGES_REQUIRED].includes(existingStatus);
+    isEdit && existingStatus && ![STATUS.DRAFT, STATUS.REVISE].includes(existingStatus);
 
   const { date: startDate, time: startTime } = splitLocalValue(form.startDateTime);
   const { date: endDate, time: endTime } = splitLocalValue(form.endDateTime);

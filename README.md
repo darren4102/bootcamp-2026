@@ -32,7 +32,7 @@ SSO" button is visual only and does nothing, as specified.
 
 - **Login** (`src/components/Login.jsx`) — client-side credential check, no real auth.
 - **Requester dashboard** (`src/components/RequesterDashboard.jsx`) — own requests,
-  filterable by status (Draft, Pending Approval, Approved, Changes Required, Rejected).
+  filterable by status (Draft, Pending Approval, Approved, Revise, Rejected).
 - **Approver dashboard** (`src/components/ApproverDashboard.jsx`) — everything a
   requester sees, plus:
   - Summary counts (Pending / Active / Completed)
@@ -44,7 +44,7 @@ SSO" button is visual only and does nothing, as specified.
   attachment picker (stores the filename only).
 - **Request detail / review** (`src/components/RequestDetail.jsx`) — full request view;
   requesters can edit Draft/Changes-Required requests, approvers can Approve, Reject, or
-  Request Changes (a comment is required for the latter two).
+  Revise (a comment is required for the latter two).
 
 All requests are stored as a single array under the `obstructionRequests` key in
 `localStorage`; the app seeds a handful of realistic sample requests the first time it

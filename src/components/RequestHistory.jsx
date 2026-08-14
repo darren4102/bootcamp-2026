@@ -64,7 +64,7 @@ export default function RequestHistory() {
     <div>
       <h1 className="font-display text-2xl font-semibold text-ink-900">Request history</h1>
       <p className="mt-1 mb-6 text-sm text-ink-500">
-        All submitted obstruction requests — pending, approved, changes required, and rejected. Drafts aren't shown.
+        All submitted obstruction requests — pending, approved, revise and rejected. Drafts aren't shown.
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">

@@ -19,7 +19,7 @@ const STYLES = {
     bg: "bg-rail-green/10",
     ring: "ring-rail-green/25",
   },
-  [STATUS.CHANGES_REQUIRED]: {
+  [STATUS.REVISE]: {
     dot: "bg-slate-blue",
     text: "text-slate-blue",
     bg: "bg-slate-blue/10",

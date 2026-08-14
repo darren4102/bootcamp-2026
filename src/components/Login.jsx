@@ -61,7 +61,7 @@ export default function Login() {
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="requester, approver, or manager"
+                placeholder="Enter your username"
                 className="w-full rounded-md border border-paper-300 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/40 outline-none focus:border-signal-amber transition-colors"
               />
             </div>
@@ -75,7 +75,7 @@ export default function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="••••••••••••"
                 className="w-full rounded-md border border-paper-300 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/40 outline-none focus:border-signal-amber transition-colors"
               />
             </div>

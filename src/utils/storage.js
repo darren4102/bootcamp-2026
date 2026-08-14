@@ -8,7 +8,7 @@ export const STATUS = {
   DRAFT: "Draft",
   PENDING: "Pending Approval",
   APPROVED: "Approved",
-  CHANGES_REQUIRED: "Changes Required",
+  REVISE: "Revise",
   REJECTED: "Rejected",
 };
 
@@ -16,7 +16,7 @@ export const STATUS_ORDER = [
   STATUS.DRAFT,
   STATUS.PENDING,
   STATUS.APPROVED,
-  STATUS.CHANGES_REQUIRED,
+  STATUS.REVISE,
   STATUS.REJECTED,
 ];
 
@@ -280,7 +280,7 @@ export function seedIfEmpty() {
       description: "Regional utility provider requires possession to lay fibre conduit beneath the track bed.",
       priority: "Low",
       attachmentName: "utility_permit.pdf",
-      status: STATUS.CHANGES_REQUIRED,
+      status: STATUS.REVISE,
       stage: null,
       createdAt: hrs(-30),
       updatedAt: hrs(-20),

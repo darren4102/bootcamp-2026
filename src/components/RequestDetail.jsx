@@ -23,7 +23,7 @@ export default function RequestDetail() {
   const [request, setRequest] = useState(() => getRequestById(id));
   const [comment, setComment] = useState("");
   const [actionError, setActionError] = useState("");
-  const [confirming, setConfirming] = useState(null); // 'Reject' | 'Changes Required' | null
+  const [confirming, setConfirming] = useState(null); // 'Reject' | 'Revise' | null
 
   const isOwner = request?.requesterUsername === user.username;
   const isApprover = user.role === "Approver";
@@ -32,7 +32,7 @@ export default function RequestDetail() {
   const atManagerStage = request?.status === STATUS.PENDING && request?.stage === STAGE.MANAGER;
   const canReview = (atApproverStage && (isApprover || isManager)) || (atManagerStage && isManager);
   const onBehalf = atApproverStage && isManager;
-  const canEdit = isOwner && [STATUS.DRAFT, STATUS.CHANGES_REQUIRED].includes(request?.status);
+  const canEdit = isOwner && [STATUS.DRAFT, STATUS.REVISE].includes(request?.status);
 
   const durationHrs = useMemo(() => {
     if (!request) return 0;
@@ -109,7 +109,7 @@ export default function RequestDetail() {
     }
     if (atApproverStage) {
       updateRequestFields(id, {
-        status: STATUS.CHANGES_REQUIRED,
+        status: STATUS.REVISE,
         approverComment: comment.trim(),
         approverUsername: user.username,
         approverActedByRole: user.role,
@@ -117,7 +117,7 @@ export default function RequestDetail() {
       });
     } else if (atManagerStage) {
       updateRequestFields(id, {
-        status: STATUS.CHANGES_REQUIRED,
+        status: STATUS.REVISE,
         managerComment: comment.trim(),
         managerUsername: user.username,
         stage: null,
@@ -201,7 +201,7 @@ export default function RequestDetail() {
             outcome={
               request.status === STATUS.REJECTED && !request.managerUsername
                 ? "rejected"
-                : request.status === STATUS.CHANGES_REQUIRED && !request.managerUsername
+                : request.status === STATUS.REVISE && !request.managerUsername
                 ? "changes"
                 : "approved"
             }
@@ -217,7 +217,7 @@ export default function RequestDetail() {
             outcome={
               request.status === STATUS.REJECTED
                 ? "rejected"
-                : request.status === STATUS.CHANGES_REQUIRED
+                : request.status === STATUS.REVISE
                 ? "changes"
                 : "approved"
             }
@@ -268,7 +268,7 @@ export default function RequestDetail() {
               ? "The approver has cleared this request. Your decision here is the final word."
               : onBehalf
               ? "No approver action yet. As manager you can complete this step on their behalf — the request will still need your separate final approval afterward."
-              : "Review the details above, then approve, reject, or request changes."}
+              : "Review the details above, then approve, reject, or revise."}
           </p>
           <label className="mt-3 block text-sm font-medium text-ink-800">
             Comment <span className="font-normal text-ink-500">(required for rejection or requested changes)</span>
@@ -298,21 +298,21 @@ export default function RequestDetail() {
             </button>
             <button
               onClick={() =>
-                confirming === "Changes Required" ? handleRequestChanges() : (setConfirming("Changes Required"), setActionError(""))
+                confirming === "Revise" ? handleRequestChanges() : (setConfirming("Revise"), setActionError(""))
               }
               className={`rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
-                confirming === "Changes Required"
+                confirming === "Revise"
                   ? "border-slate-blue bg-slate-blue text-paper-50"
                   : "border-slate-blue/30 text-slate-blue hover:bg-slate-blue/5"
               }`}
             >
-              {confirming === "Changes Required" ? "Confirm request changes" : "Request changes"}
+              {confirming === "Revise" ? "Confirm revise" : "Revise"}
             </button>
             <button
               onClick={handleApprove}
               className="rounded-md bg-rail-green px-4 py-2 text-sm font-semibold text-paper-50 hover:bg-rail-green-dark"
             >
-              {atManagerStage ? "Give final approval" : onBehalf ? "Approve on behalf of approver" : "Approve"}
+              {atManagerStage ? "Approve" : onBehalf ? "Approve on behalf" : "Approve"}
             </button>
           </div>
         </div>

@@ -46,7 +46,7 @@ function computeSteps(request) {
   } else if (status === STATUS.APPROVED) {
     approverState = "complete";
     managerState = "complete";
-  } else if (status === STATUS.REJECTED || status === STATUS.CHANGES_REQUIRED) {
+  } else if (status === STATUS.REJECTED || status === STATUS.REVISE) {
     const outcome = status === STATUS.REJECTED ? "rejected" : "changes";
     if (managerUsername) {
       // decision happened at the manager stage, so approver stage already passed
