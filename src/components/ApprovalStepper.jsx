@@ -112,8 +112,13 @@ export default function ApprovalStepper({ request }) {
       <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-ink-500">Approval chain</p>
       {/* Circles + connecting lines: sized purely by the fixed 2rem circle,
           so variable-length caption text below never stretches/shortens a
-          line or breaks vertical alignment between steps. */}
+          line or breaks vertical alignment between steps. The flex-[0.15]
+          spacers at each end soak up a slice of the row that would otherwise
+          go to the lines, shortening them and pulling the outer (Requester/
+          Manager) circles inward while the middle (Approver) circle — fed
+          equally from both sides — stays anchored at the same center point. */}
       <div className="flex items-center">
+        <div aria-hidden="true" className="flex-[0.15]" />
         {steps.map((step, idx) => {
           const styles = STEP_STYLES[step.state];
           return (
@@ -129,12 +134,15 @@ export default function ApprovalStepper({ request }) {
             </div>
           );
         })}
+        <div aria-hidden="true" className="flex-[0.15]" />
       </div>
 
       {/* Labels + on-behalf captions: mirrors the row above's exact flex
-          geometry (same fixed-width box, same flex-1 spacer) so each label
-          centers under its circle regardless of caption length. */}
+          geometry (same fixed-width box, same flex-1 spacer, same edge
+          spacers) so each label centers under its circle regardless of
+          caption length. */}
       <div className="flex items-start">
+        <div aria-hidden="true" className="flex-[0.15]" />
         {steps.map((step, idx) => {
           const styles = STEP_STYLES[step.state];
           return (
@@ -153,6 +161,7 @@ export default function ApprovalStepper({ request }) {
             </div>
           );
         })}
+        <div aria-hidden="true" className="flex-[0.15]" />
       </div>
     </div>
   );
