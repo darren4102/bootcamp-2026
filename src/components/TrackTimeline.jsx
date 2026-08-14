@@ -31,6 +31,10 @@ function assignLanes(items) {
 // obstructions each still get their own row.
 const LANE_ROW_STEP_REM = 1.35;
 const BASE_HEIGHT_REM = 6; // matches the original h-24 container
+// Reserved band at the very top for the "Now" label, kept clear of every
+// obstruction lane so the label never sits on top of a bar — only the thin
+// vertical line (which spans the full height) is allowed to cross bars.
+const NOW_LABEL_ROW_REM = 1.2;
 function laneTopRem(lane) {
   return lane === 0 ? 0.15 : 4.6 + (lane - 1) * LANE_ROW_STEP_REM;
 }
@@ -56,8 +60,9 @@ export default function TrackTimeline({ requests }) {
 
   const laneById = assignLanes(visible);
   const maxLane = visible.reduce((m, r) => Math.max(m, laneById.get(r.id) ?? 0), 0);
-  const containerHeightRem =
+  const trackHeightRem =
     maxLane <= 1 ? BASE_HEIGHT_REM : BASE_HEIGHT_REM + (maxLane - 1) * LANE_ROW_STEP_REM;
+  const containerHeightRem = NOW_LABEL_ROW_REM + trackHeightRem;
 
   const sleeperCount = 28;
 
@@ -78,44 +83,50 @@ export default function TrackTimeline({ requests }) {
       </div>
 
       <div className="relative select-none" style={{ height: `${containerHeightRem}rem` }}>
-        {/* sleepers */}
-        <div className="absolute inset-x-0 top-11 flex justify-between">
-          {Array.from({ length: sleeperCount }).map((_, i) => (
-            <div key={i} className="h-3 w-1 rounded-sm bg-paper-300" />
-          ))}
+        {/* track content (sleepers, rails, obstruction lanes) sits below the
+            reserved "Now" label row so the label never overlaps a bar */}
+        <div className="relative" style={{ top: `${NOW_LABEL_ROW_REM}rem`, height: `${trackHeightRem}rem` }}>
+          {/* sleepers */}
+          <div className="absolute inset-x-0 top-11 flex justify-between">
+            {Array.from({ length: sleeperCount }).map((_, i) => (
+              <div key={i} className="h-3 w-1 rounded-sm bg-paper-300" />
+            ))}
+          </div>
+          {/* rails */}
+          <div className="absolute inset-x-0 top-9 h-0.5 bg-ink-500/40" />
+          <div className="absolute inset-x-0 top-[3.4rem] h-0.5 bg-ink-500/40" />
+
+          {/* obstruction blocks */}
+          {visible.map((r) => {
+            const left = pct(r.startDateTime);
+            const right = pct(r.endDateTime);
+            const width = Math.max(right - left, 1.2);
+            const active = isActive(r);
+            const past = !active && isCompleted(r);
+            const colorClass = active ? "bg-rail-green" : past ? "bg-ink-500" : "bg-slate-blue";
+            const lane = laneById.get(r.id) ?? 0;
+            return (
+              <button
+                key={r.id}
+                onClick={() => navigate(`/requests/${r.id}`)}
+                title={`${r.id} — ${r.location}`}
+                className={`absolute z-10 h-3 rounded-sm ring-2 ring-paper-50 transition-transform hover:scale-y-125 ${colorClass}`}
+                style={{
+                  left: `${left}%`,
+                  width: `${width}%`,
+                  top: `${laneTopRem(lane)}rem`,
+                }}
+              />
+            );
+          })}
         </div>
-        {/* rails */}
-        <div className="absolute inset-x-0 top-9 h-0.5 bg-ink-500/40" />
-        <div className="absolute inset-x-0 top-[3.4rem] h-0.5 bg-ink-500/40" />
 
-        {/* obstruction blocks */}
-        {visible.map((r) => {
-          const left = pct(r.startDateTime);
-          const right = pct(r.endDateTime);
-          const width = Math.max(right - left, 1.2);
-          const active = isActive(r);
-          const past = !active && isCompleted(r);
-          const colorClass = active ? "bg-rail-green" : past ? "bg-ink-500" : "bg-slate-blue";
-          const lane = laneById.get(r.id) ?? 0;
-          return (
-            <button
-              key={r.id}
-              onClick={() => navigate(`/requests/${r.id}`)}
-              title={`${r.id} — ${r.location}`}
-              className={`absolute z-10 h-3 rounded-sm ring-2 ring-paper-50 transition-transform hover:scale-y-125 ${colorClass}`}
-              style={{
-                left: `${left}%`,
-                width: `${width}%`,
-                top: `${laneTopRem(lane)}rem`,
-              }}
-            />
-          );
-        })}
-
-        {/* now marker — rendered after (and above, via z-index) the obstruction blocks */}
+        {/* now marker — the label lives in the reserved top row; the line
+            spans the full height (rendered above the bars via z-index) and
+            is the only part allowed to cross obstruction bars */}
         <div className="absolute top-0 bottom-0 z-20" style={{ left: `${pct(now)}%` }}>
           <div className="h-full w-px bg-alert-rust" />
-          <div className="absolute -top-0.5 -translate-x-1/2 whitespace-nowrap rounded-sm bg-alert-rust px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide text-paper-50">
+          <div className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-sm bg-alert-rust px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide text-paper-50">
             Now
           </div>
         </div>
