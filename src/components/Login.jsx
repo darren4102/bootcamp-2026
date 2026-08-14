@@ -45,7 +45,7 @@ export default function Login() {
         <div className="mb-8 flex items-center gap-3">
           <img src="/xyz-icon.svg" className="h-11 w-11" />
           <div>
-            <p className="font-display text-xl font-semibold tracking-tight text-ink-900">TrackHold</p>
+            <p className="font-display text-xl font-semibold tracking-tight text-ink-900">XYZ Corporations</p>
             <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
               Obstruction Management
             </p>
