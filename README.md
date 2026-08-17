@@ -24,6 +24,7 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 |--------------|-----------|------------|
 | `requester`  | `password` | Requester  |
 | `approver`   | `password` | Approver   |
+| `manager`   | `password` | Manager   |
 
 The login screen has one-click buttons that fill these in for you. The "Continue with
 SSO" button is visual only and does nothing, as specified.
